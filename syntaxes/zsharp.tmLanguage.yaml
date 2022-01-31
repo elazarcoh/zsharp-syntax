@@ -65,13 +65,12 @@ repository:
   
   array-type:
     name: 'meta.array.zs'
-    match: \b([_[:alpha:]][_[:alnum:]]*)(\[\])\b
+    match: '([_[:alpha:]][_[:alnum:]]*)(\[\])'
     captures:
-      '1':
-        patterns:
-        - include: '#type'
-      '2':
-        name: punctuation.definition.array.zs
+      '1': 
+        patterns: 
+         - include: '#type'
+      '2': {name: punctuation.definition.array.zs}
   
   function-type-seperator:
     name: punctuation.separator.function-type.zs
