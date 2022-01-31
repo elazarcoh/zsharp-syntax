@@ -1,0 +1,364 @@
+---
+"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json"
+name: Z#
+
+patterns:
+- include: '#comment'
+- include: '#using-directive'
+- include: '#class-declaration'
+- include: "#function-declaration"
+# - include: '#template-definition'
+
+repository:
+
+  using-directive:
+    patterns:
+    - begin: \b(using)\b\s+
+      beginCaptures:
+        '1': { name: keyword.other.using.zs }
+      end: (?=;)
+      patterns:
+      - include: '#type'
+    
+  typing:
+    name: meta.typing.zs
+    begin: (?:(:)\s*)
+    beginCaptures:
+      '1': { name: punctuation.separator.colon.cs }
+    end: (?=\s*[\{\n;])
+    endCaptures:
+      '0': { name: foobar }
+    patterns:
+    - include: '#type'
+
+  type:
+    name: meta.type.zs
+    patterns:
+    - include: '#function-type'
+    - include: '#array-type'
+    - include: '#unit-type'
+    - include: '#type-builtin'
+    - include: '#type-name'
+ 
+  unit-type:
+    name: 'meta.unit.zs'
+    match: \(\)
+ 
+  type-builtin:
+    match: \b(bool|byte|char|decimal|double|float|int|long|object|sbyte|short|string|uint|ulong|ushort|void|dynamic)\b
+    captures:
+      '1':
+        name: keyword.type.zs
+
+  type-name:
+    patterns:
+    - match: ([_[:alpha:]][_[:alnum:]]*)\s*(\.)
+      captures:
+        '1': { name: entity.name.type.zs }
+        '2': { name: punctuation.accessor.zs }
+    - match: (\.)\s*([_[:alpha:]][_[:alnum:]]*)
+      captures:
+        '1': { name: punctuation.accessor.zs }
+        '2': { name: entity.name.type.zs }
+    - name: entity.name.type.zs
+      match: '[_[:alpha:]][_[:alnum:]]*'
+  
+  array-type:
+    name: 'meta.array.zs'
+    match: \b([_[:alpha:]][_[:alnum:]]*)(\[\])\b
+    captures:
+      '1':
+        patterns:
+        - include: '#type'
+      '2':
+        name: punctuation.definition.array.zs
+  
+  function-type-seperator:
+    name: punctuation.separator.function-type.zs
+    match: '->'
+
+  function-type:
+    name: meta.function-type.zs
+    begin: ':'
+    beginCaptures:
+      '0': { name: punctuation.separator.colon.cs }
+    end: (?=[\{\n;])
+    patterns:
+    - include: '#array-type'
+    - include: '#unit-type'
+    - include: '#type-builtin'
+    - include: '#type-name'
+    - include: '#function-type-seperator'
+ 
+  class-declaration:
+    begin: (?=\bclass\b)
+    end: (?<=\})
+    patterns:
+    - begin: |
+        (?x)
+        \b(class)\b\s+
+        (?<name>[_[:alpha:]][_[:alnum:]]*)\s*
+        (?:\(\s*(?<metaclass>[_[:alpha:]][_[:alnum:]]*)\s*\))?
+      beginCaptures:
+        '1': { name: keyword.other.class.zs }
+        '2': { name: entity.name.class.zs }
+        '3':  
+          name: entity.name.meta-class.zs
+          patterns: 
+          - include: '#type-name'
+      end: (?=\{)
+      patterns:
+      - include: '#comment'
+      - include: '#base-types'
+    - include: '#class-body'
+    
+  base-types:
+    name: meta.base-types.zs
+    begin: ':'
+    beginCaptures:
+      '0': { name: punctuation.separator.colon.cs }
+    end: (?=\{)
+    patterns:
+    - include: '#type-name'
+    - include: '#punctuation-comma'
+
+  class-body:
+    name: meta.class.body.zs
+    begin: \{
+    beginCaptures:
+      '0': { name: punctuation.curlybrace.open.zs }
+    end: \}
+    endCaptures:
+      '0': { name: punctuation.curlybrace.close.zs }
+    patterns:
+    - include: '#comment'
+    # - include: '#class-member'
+
+  punctuation-comma:
+    name: punctuation.separator.comma.cs
+    match: ','
+
+  expression:
+    comment: All valid Python expressions
+    patterns:
+      # - include: '#expression-base'
+      # - include: '#member-access'
+      - comment: Tokenize identifiers to help linters
+        match: (?x) \b ([[:alpha:]_]\w*) \b
+
+  comment:
+    patterns:
+    - name: comment.block.zs
+      begin: /\*
+      beginCaptures:
+        '0': { name: punctuation.definition.comment.zs }
+      end: \*/
+      endCaptures:
+        '0': { name: punctuation.definition.comment.zs }
+    - begin: (^\s+)?(?=//)
+      beginCaptures:
+        '1': { name: punctuation.whitespace.comment.leading.zs }
+      end: (?=$)
+      patterns:
+      - name: comment.block.documentation.zs
+        begin: (?<!/)///(?!/)
+        beginCaptures:
+          '0': { name: punctuation.definition.comment.zs }
+        end: (?=$)
+      - name: comment.line.double-slash.zs
+        begin: (?<!/)//(?:(?!/)|(?=//))
+        beginCaptures:
+          '0': { name: punctuation.definition.comment.zs }
+        end: (?=$)
+     
+  namespace-block:
+    patterns:
+    - include: "#function-declaration"
+
+  keywords:
+    patterns:
+    - name: keyword.control.flow.zs
+      match: "\\b(if|while|for|return)\\b"
+
+  function-modifier:
+    name: 'storage.modifier.function.zs'
+    match: (?<!\.)\b(static|__entrypoint)\b
+ 
+  parenthesized-parameters:
+    name: meta.function.parameters.zs
+    begin: (\()
+    end: (\))
+    beginCaptures:
+      '1': {name: punctuation.definition.parameters.begin.zs}
+    endCaptures:
+      '1': {name: punctuation.definition.parameters.end.zs}
+
+    patterns:
+      - match: |
+          (?x)
+            ([[:alpha:]_]\w*)
+              \s* (?: (,) | (?=[)\n]))
+        captures:
+          '1': {name: variable.parameter.function.language.zs}
+          '2': {name: punctuation.separator.parameters.zs}
+
+      - include: '#comment'
+    
+  function-declaration:
+    begin: |
+      (?x)
+      ((?:\s*[_[:alpha:]][_[:alnum:]]*\s+)*)
+      \s*(func)\s+
+      ([_[:alpha:]][_[:alnum:]]*)
+    beginCaptures:
+      "1": 
+        patterns:
+          - include: '#function-modifier'
+      "2": { name: storage.modifier.zs }
+      '3': { name: entity.name.function.zs }
+    end: (?<=\})
+    patterns:
+    - include: '#parenthesized-parameters'
+    - include: '#typing'
+    - include: '#function-body'
+
+  function-body:
+    name: meta.function.body.zs
+    begin: \{
+    beginCaptures:
+      '0': { name: punctuation.curlybrace.open.zs }
+    end: \}
+    endCaptures:
+      '0': { name: punctuation.curlybrace.close.zs }
+    patterns:
+    - include: "#IL-block"
+    # - include: "#function-call"
+    # - include: "#expression"
+    # - include: "#type-builtin"
+    # - include: "#type-name"
+
+  function-call:
+    name: meta.function-call.zs
+    begin: >
+      (?x)
+        \b(?=
+          ([[:alpha:]_]\w*) \s* (\()
+        )
+    end: (\))
+    endCaptures:
+      "1": {name: punctuation.definition.arguments.end.zs}
+    patterns:
+      - include: '#function-name'
+      - include: '#function-arguments'
+
+  function-name:
+    patterns:
+      - comment: Some color schemas support meta.function-call.generic scope
+        name: meta.function-call.generic.zs
+        match: >
+          (?x)
+            \b ([[:alpha:]_]\w*) \b
+
+  function-arguments:
+    begin: (\()
+    end: (?=\))(?!\)\s*\()
+    beginCaptures:
+      "1":
+        name: punctuation.definition.arguments.begin.zs
+    contentName: meta.function-call.arguments.zs
+    patterns:
+      - name: punctuation.separator.arguments.zs
+        match: (,)
+      - include: '#expression'
+
+  strings:
+    name: string.quoted.double.zsharp
+    begin: "\""
+    end: "\""
+    patterns:
+    - name: constant.character.escape.zsharp
+      match: "\\\\."
+
+  IL-block:
+    name: meta.embedded.il
+    begin: \b(IL)\b\s*(\{)
+    beginCaptures:
+      '1': { name: storage.modifier.IL-block.zs }
+      '2': { name: punctuation.curlybrace.open-IL.zs }
+    end: \}
+    endCaptures:
+      '0': { name: punctuation.curlybrace.close-IL.zs }
+    patterns:
+    - include: "#IL-code"
+
+  IL-code:
+    name: meta.block.il.zsharp
+    patterns:
+    - include: "#function-call"
+    - include: "#type-name"
+    - match: "^\\s*(.assembly|.module|.class|.maxstack|.hash|.method|.imagebase|.stackreserve|.subsystem|.corflags|.publickeytoken|.custom|.entrypoint)\\b"
+      name: keyword.control
+    - match: "^\\s*([A-Za-z_][A-Za-z_0-9]+:)?\\s*(ret|nop|ldarg.\\d|ldstr|call|ldlen|stloc.\\d|ldloc.\\d|newobj|ldc.i4.\\d)\\b"
+      captures:
+        '1':
+          name: entity.name.tag
+        '2':
+          name: entity.name.function
+    - match: "\\b(public|private|auto|ansi|beforefieldinit|static|hidebysig|specialname|rtspecialname|instance|cil|managed)\\b"
+      name: constant.language
+    - match: "\\b(void|string)\\b (\\.?.+?\\().*?(\\))"
+      captures:
+        '1':
+          name: keyword.control
+        '2':
+          name: entity.name.function
+        '3':
+          name: entity.name.function
+    - match: "^\\s*([A-Za-z_][A-Za-z_0-9]+:)?\\s*(br\\.s)\\s+([A-Za-z_][A-Za-z_0-9]+)\\b"
+      captures:
+        '1':
+          name: entity.name.tag.il
+        '2':
+          name: entity.name.selector
+        '3':
+          name: entity.name.tag.il
+    - begin: "\""
+      beginCaptures:
+        '0':
+          name: string.value.il
+      end: "\""
+      endCaptures:
+        '0':
+          name: string.value.il
+      name: string.value.il
+      patterns:
+      - match: \\(NUL|SOH|STX|ETX|EOT|ENQ|ACK|BEL|BS|HT|LF|VT|FF|CR|SO|SI|DLE|DC1|DC2|DC3|DC4|NAK|SYN|ETB|CAN|EM|SUB|ESC|FS|GS|RS|US|SP|DEL|[abfnrtv\\\"'\&]|x[0-9a-fA-F]{1,5})
+        name: constant.character.escape.il
+      - match: "\\^[A-Z@\\[\\]\\\\\\^_]"
+        name: constant.character.escape.control.il
+    - begin: "//"
+      end: "$"
+      name: comment.line.double-dash.il
+
+  template-definition:
+    begin: (?<!\w)(template)(?:(?:\s)+)?(<)
+    end: '>'
+    beginCaptures:
+      1:
+        name: storage.type.template.zs
+      2:
+        name: punctuation.section.angle-brackets.start.template.definition.zs
+    endCaptures:
+      0:
+        name: punctuation.section.angle-brackets.end.template.definition.zs
+    name: meta.template.definition.zs
+    patterns:
+      - begin: (?<=\w)(?:(?:\s)+)?<
+        end: '>'
+        beginCaptures:
+          0:
+            name: punctuation.section.angle-brackets.begin.template.call.zs
+        endCaptures:
+          0:
+            name: punctuation.section.angle-brackets.begin.template.call.zs
+scopeName: source.zs

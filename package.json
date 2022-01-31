@@ -1,0 +1,47 @@
+{
+    "name": "z-sharp",
+    "displayName": "Z#",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.63.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "zsharp",
+                "aliases": [
+                    "Z#",
+                    "zsharp"
+                ],
+                "extensions": [
+                    ".zs"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "zsharp",
+                "scopeName": "source.zs",
+                "path": "./syntaxes/zsharp.tmLanguage.json"
+            }
+        ],
+        "semanticTokenScopes": [
+            {
+                "language": "zsharp",
+                "scopes": {
+                    "meta.block.il.zsharp": [
+                        "variable.other.constant.property"
+                    ]
+                }
+            }
+        ]
+    },
+    "devDependencies": {
+        "js-yaml": "^4.1.0"
+    }
+}

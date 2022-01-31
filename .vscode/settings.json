@@ -1,0 +1,13 @@
+{
+    "filewatcher.commands": [
+        {
+            "match": "zsharp.tmLanguage.yaml",
+            "cmd": "npx js-yaml ${file} > ${workspaceRoot}/syntaxes/${fileBasenameNoExt}.json",
+            "event": "onFileChange",
+            "isAsync": true
+        }
+    ],
+    "cSpell.enableFiletypes": [
+        "yaml-tmlanguage"
+    ],
+}
