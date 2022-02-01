@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"name": "Root",
+			"path": "."
+		},
+		{
+			"path": "z-sharp"
+		},
+		{
+			"path": "utils"
+		}
+	],
+	"settings": {
+		"filewatcher.commands": [
+			{
+				"match": "ZSharp.YAML-tmLanguage",
+				"cmd": "cd ${workspaceRoot} && yarn workspace z-sharp run build",
+				"event": "onFileChange",
+				"isAsync": true,
+			}
+		],
+	}
+}
