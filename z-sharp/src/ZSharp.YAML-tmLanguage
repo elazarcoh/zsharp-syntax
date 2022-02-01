@@ -27,7 +27,7 @@ repository:
     name: meta.typing.zs
     begin: (?:(:)\s*)
     beginCaptures:
-      '1': { name: punctuation.separator.colon.cs }
+      '1': { name: punctuation.separator.colon.zs }
     end: (?=\s*[\{\n;])
     endCaptures:
       '0': { name: foobar }
@@ -59,16 +59,16 @@ repository:
       captures:
         '1': { name: entity.name.type.zs }
         '2': { name: punctuation.accessor.zs }
-    - match: (\.)\s*([_[:alpha:]][_[:alnum:]]*)
+    - match: (\.)\s*({{identifier}})
       captures:
         '1': { name: punctuation.accessor.zs }
         '2': { name: entity.name.type.zs }
     - name: entity.name.type.zs
-      match: '[_[:alpha:]][_[:alnum:]]*'
+      match: '{{identifier}}'
   
   array-type:
     name: 'meta.array.zs'
-    match: '([_[:alpha:]][_[:alnum:]]*)(\[\])'
+    match: '({{identifier}})(\[\])'
     captures:
       '1': 
         patterns: 
@@ -83,7 +83,7 @@ repository:
     name: meta.function-type.zs
     begin: ':'
     beginCaptures:
-      '0': { name: punctuation.separator.colon.cs }
+      '0': { name: punctuation.separator.colon.zs }
     end: (?=[\{\n;])
     patterns:
     - include: '#array-type'
@@ -99,8 +99,8 @@ repository:
     - begin: |
         (?x)
         \b(class)\b\s+
-        (?<name>[_[:alpha:]][_[:alnum:]]*)\s*
-        (?:\(\s*(?<metaclass>[_[:alpha:]][_[:alnum:]]*)\s*\))?
+        (?<name>{{identifier}})\s*
+        (?:\(\s*(?<metaclass>{{identifier}})\s*\))?
       beginCaptures:
         '1': { name: keyword.other.class.zs }
         '2': { name: entity.name.class.zs }
@@ -118,7 +118,7 @@ repository:
     name: meta.base-types.zs
     begin: ':'
     beginCaptures:
-      '0': { name: punctuation.separator.colon.cs }
+      '0': { name: punctuation.separator.colon.zs }
     end: (?=\{)
     patterns:
     - include: '#type-name'
@@ -139,21 +139,59 @@ repository:
   class-member:
     patterns:
     - include: '#function-declaration'
-    # - include: '#property-declaration'
+    - include: '#property-declaration'
+    - include: '#field-declaration'
 
-  # property-declaration:
+  field-declaration:
+    begin: ({{identifier}})\s*(?=:)
+    beginCaptures:
+      '1': { name: entity.name.variable.property.zs }
+    end: (?<=\;)  
+    patterns:
+    - include: '#typing'
+
+  property-declaration:
+    begin: ({{identifier}})\s*(?=\:.*?\{)
+    beginCaptures:
+      '1': { name: entity.name.variable.property.zs }
+    end: (?<=\})  
+    patterns:
+    - include: '#typing'
+    - comment: property-body
+      begin: \{
+      beginCaptures:
+        '0': { name: punctuation.curlybrace.open.zs }
+      end: \}
+      endCaptures:
+        '0': { name: punctuation.curlybrace.close.zs }
+      patterns:
+      - include: '#comment'
+      - include: '#get-property'
+      - include: '#set-property'
+  
+  get-property:
+    begin: \b(get)\b
+    beginCaptures:
+      '1': { name: keyword.other.get.zs }
+    end: (?<=\})  
+    patterns:
+    - include: '#function-body'
+
+  set-property:
+    begin: \b(set)\b
+    beginCaptures:
+      '1': { name: keyword.other.set.zs }
+    end: (?<=\})  
+    patterns:
+    - include: '#function-body'
 
   punctuation-comma:
-    name: punctuation.separator.comma.cs
+    name: punctuation.separator.comma.zs
     match: ','
 
   expression:
-    comment: All valid Python expressions
     patterns:
-      # - include: '#expression-base'
-      # - include: '#member-access'
-      - comment: Tokenize identifiers to help linters
-        match: (?x) \b ([[:alpha:]_]\w*) \b
+    - include: '#numeric-literal'
 
   comment:
     patterns:
@@ -216,9 +254,9 @@ repository:
   function-declaration:
     begin: |
       (?x)
-      ((?:\s*[_[:alpha:]][_[:alnum:]]*\s+)*)
+      ((?:\s*{{identifier}}\s+)*)
       \s*(func)\s+
-      ([_[:alpha:]][_[:alnum:]]*)
+      ({{identifier}})
     beginCaptures:
       "1": 
         patterns:
@@ -242,7 +280,7 @@ repository:
     patterns:
     - include: "#IL-block"
     # - include: "#function-call"
-    # - include: "#expression"
+    - include: "#expression"
     # - include: "#type-builtin"
     # - include: "#type-name"
 
@@ -279,6 +317,102 @@ repository:
       - name: punctuation.separator.arguments.zs
         match: (,)
       - include: '#expression'
+
+  numeric-literal:
+    comment: TODO taken from C# as is. Need to modify.
+    match: "(?<!\\w)\\.?\\d(?:(?:[0-9a-zA-Z_\\.]|_)|(?<=[eE])[+-])*"
+    captures:
+      '0':
+        patterns:
+        - begin: "(?=.)"
+          end: "$"
+          patterns:
+          # Decimal number (with optional thousands separator) with mandatory decimal part (with optional thousands separator) and optional exponent (also with optional thousands separator)
+          - match: "(\\G(?=[0-9.])(?!0[xXbB]))([0-9](?:[0-9]|((?<=[0-9a-fA-F])_(?=[0-9a-fA-F])))*)?((?:(?<=[0-9])|\\.(?=[0-9])))([0-9](?:[0-9]|((?<=[0-9a-fA-F])_(?=[0-9a-fA-F])))*)?((?<!_)([eE])(\\+?)(\\-?)((?:[0-9](?:[0-9]|(?:(?<=[0-9a-fA-F])_(?=[0-9a-fA-F])))*)))?([fFdDmM](?!\\w))?$"
+            captures:
+              '2':
+                name: constant.numeric.decimal.zs
+                patterns:
+                - match: "(?<=[0-9a-fA-F])_(?=[0-9a-fA-F])"
+                  name: constant.numeric.other.separator.thousands.zs
+              '3':
+                name: constant.numeric.other.separator.thousands.zs
+              '4':
+                name: constant.numeric.other.separator.decimals.zs
+              '5':
+                name: constant.numeric.decimal.zs
+                patterns:
+                - match: "(?<=[0-9a-fA-F])_(?=[0-9a-fA-F])"
+                  name: constant.numeric.other.separator.thousands.zs
+              '6':
+                name: constant.numeric.other.separator.thousands.zs
+              '8':
+                name: constant.numeric.other.exponent.zs
+              '9':
+                name: keyword.operator.arithmetic.zs
+              '10':
+                name: keyword.operator.arithmetic.zs
+              '11':
+                name: constant.numeric.decimal.zs
+                patterns:
+                - match: "(?<=[0-9a-fA-F])_(?=[0-9a-fA-F])"
+                  name: constant.numeric.other.separator.thousands.zs
+              '12':
+                name: constant.numeric.other.suffix.zs
+          # Binary number (with optional thousands separator)
+          - match: "(\\G0[bB])([01_](?:[01_]|((?<=[0-9a-fA-F])_(?=[0-9a-fA-F])))*)((?:(?:(?:(?:(?:[uU]|[uU]l)|[uU]L)|l[uU]?)|L[uU]?)|[fFdDmM])(?!\\w))?$"
+            captures:
+              '1':
+                name: constant.numeric.other.preffix.binary.zs
+              '2':
+                name: constant.numeric.binary.zs
+                patterns:
+                - match: "(?<=[0-9a-fA-F])_(?=[0-9a-fA-F])"
+                  name: constant.numeric.other.separator.thousands.zs
+              '3':
+                name: constant.numeric.other.separator.thousands.zs
+              '4':
+                name: constant.numeric.other.suffix.zs
+          # Hexadecimal number (with optional thousands separator)
+          - match: "(\\G0[xX])([0-9a-fA-F](?:[0-9a-fA-F]|((?<=[0-9a-fA-F])_(?=[0-9a-fA-F])))*)((?:(?:(?:(?:(?:[uU]|[uU]l)|[uU]L)|l[uU]?)|L[uU]?)|[fFdDmM])(?!\\w))?$"
+            captures:
+              '1':
+                name: constant.numeric.other.preffix.hex.zs
+              '2':
+                name: constant.numeric.hex.zs
+                patterns:
+                - match: "(?<=[0-9a-fA-F])_(?=[0-9a-fA-F])"
+                  name: constant.numeric.other.separator.thousands.zs
+              '3':
+                name: constant.numeric.other.separator.thousands.zs
+              '4':
+                name: constant.numeric.other.suffix.zs
+          # Integral number (with optional thousands separator) with no decimal part and optional exponent (also with optional thousands separator)
+          - match: "(\\G(?=[0-9.])(?!0[xXbB]))([0-9](?:[0-9]|((?<=[0-9a-fA-F])_(?=[0-9a-fA-F])))*)((?<!_)([eE])(\\+?)(\\-?)((?:[0-9](?:[0-9]|(?:(?<=[0-9a-fA-F])_(?=[0-9a-fA-F])))*)))?((?:(?:(?:(?:(?:[uU]|[uU]l)|[uU]L)|l[uU]?)|L[uU]?)|[fFdDmM])(?!\\w))?$"
+            captures:
+              '2':
+                name: constant.numeric.decimal.zs
+                patterns:
+                - match: "(?<=[0-9a-fA-F])_(?=[0-9a-fA-F])"
+                  name: constant.numeric.other.separator.thousands.zs
+              '3':
+                name: constant.numeric.other.separator.thousands.zs
+              '5':
+                name: constant.numeric.other.exponent.zs
+              '6':
+                name: keyword.operator.arithmetic.zs
+              '7':
+                name: keyword.operator.arithmetic.zs
+              '8':
+                name: constant.numeric.decimal.zs
+                patterns:
+                - match: "(?<=[0-9a-fA-F])_(?=[0-9a-fA-F])"
+                  name: constant.numeric.other.separator.thousands.zs
+              '9':
+                name: constant.numeric.other.suffix.zs
+          # Capture the rest as an invalid numeric literal
+          - match: "(?:(?:[0-9a-zA-Z_\\.]|_)|(?<=[eE])[+-])+"
+            name: invalid.illegal.constant.numeric.zs
 
   strings:
     name: string.quoted.double.zsharp
@@ -370,4 +504,5 @@ repository:
         endCaptures:
           0:
             name: punctuation.section.angle-brackets.begin.template.call.zs
+
 scopeName: source.zs
