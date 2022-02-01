@@ -5,6 +5,7 @@
         "utils"
     ],
     "scripts": {
-        "build": "yarn workspace utils run build && yarn workspace z-sharp run build"
+        "build": "yarn workspace utils run build && yarn workspace z-sharp run build",
+        "package": "yarn workspace z-sharp run package"
     }
 }

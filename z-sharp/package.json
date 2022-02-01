@@ -1,5 +1,10 @@
 {
     "name": "z-sharp",
+    "publisher": "elazarcoh",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/elazarcoh/zsharp-syntax"
+    },
     "displayName": "Z#",
     "description": "",
     "version": "0.0.1",
@@ -42,6 +47,10 @@
         ]
     },
     "scripts": {
-        "build": "node ../utils/build.js"
+        "build": "node ../utils/build.js",
+        "package": "vsce package --yarn"
+    },
+    "dependencies": {
+        "vsce": "^2.6.6"
     }
 }
