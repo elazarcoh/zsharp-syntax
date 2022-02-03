@@ -89,6 +89,7 @@ function buildGrammar() {
     const grammar = getZSharpGrammar(grammarVariables => grammarVariables);
 
     // Write ZSharp.tmLanguage
+    fs.mkdirSync('syntaxes', { recursive: true });
     writePlistFile(grammar, outputFile(Language.ZSharp, Extension.TmLanguage));
 }
 
