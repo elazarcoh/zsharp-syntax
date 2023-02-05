@@ -3,11 +3,11 @@
     "publisher": "elazarcoh",
     "repository": {
         "type": "git",
-        "url": "https://github.com/elazarcoh/zs-syntax"
+        "url": "https://github.com/elazarcoh/zsharp-syntax"
     },
-    "displayName": "zs (cppfront) Syntax Highlighting",
-    "description": "Syntax highlighting for zs (cppfront) language",
-    "version": "0.0.2",
+    "displayName": "ZSharp Syntax Highlighting",
+    "description": "Syntax highlighting for ZSharp",
+    "version": "0.0.1",
     "preview": true,
     "engines": {
         "vscode": "^1.63.0"
