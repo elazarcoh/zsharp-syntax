@@ -1,0 +1,30 @@
+{
+	"folders": [
+		{
+			"name": "Root",
+			"path": "."
+		},
+		{
+			"path": "zs"
+		},
+		{
+			"path": "utils"
+		}
+	],
+	"settings": {
+		"filewatcher.commands": [
+			{
+				"match": "zs.YAML-tmLanguage",
+				"cmd": "yarn --cwd \"${workspaceRoot}\" workspace zs-syntax run build",
+				"event": "onFileChange",
+				"isAsync": true,
+			}
+		],
+	},
+	"extensions": {
+		"recommendations": [
+			"appulate.filewatcher",
+			"pedro-w.tmlanguage"
+		]
+	}
+}

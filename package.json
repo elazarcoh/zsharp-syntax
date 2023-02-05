@@ -1,0 +1,12 @@
+{
+    "private": true,
+    "workspaces": [
+        "zs",
+        "utils"
+    ],
+    "scripts": {
+        "build": "yarn workspace utils run build && yarn workspace zs-syntax run build",
+        "package": "yarn workspace zs-syntax run package"
+    },
+    "packageManager": "yarn@3.4.1"
+}
