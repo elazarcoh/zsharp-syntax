@@ -230,8 +230,8 @@ repository:
     name: meta.definition.function.zs
     begin: |
       (?x)
-      (fun)\s+
-      ({{identifier}})
+      (fun)
+      (\s+{{identifier}})?
       # (?=\s*[\(])
     beginCaptures:
       "1": { name: keyword.control.function.zs }
